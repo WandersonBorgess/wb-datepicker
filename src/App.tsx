@@ -3,7 +3,7 @@ import DatePicker from './datepicker/datepicker';
 
 import './App.css';
 
-function App() {
+const App = (): JSX.Element =>  {
   return (
     <div className='App'>
       <DatePicker />

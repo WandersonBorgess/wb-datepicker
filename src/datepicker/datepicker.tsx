@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
 import './datepicker.css';
 
+interface IDayDetails {
+  index: number;
+  firstDay: number;
+  month: number;
+  year: number;
+  numberOfDays: number;
+  timestamp: number
+  date: number
+}
+
+interface IDate {
+  year: number;
+  month: number;
+  date: number;
+}
+
+interface IPickerDate {
+  year: number;
+  month: number;
+  selectedDay?: number;
+  monthDetails?: IDayDetails[]
+}
 
 const DatePicker = () => {
   let oneDay = 60 * 60 * 24 * 1000;
   let todayTimestamp = Date.now() - (Date.now() % oneDay) + (new Date().getTimezoneOffset() * 1000 * 60);
-  let inputRef = React.createRef();
+  let inputRef = React.createRef<any>();
   
   const daysArray = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
   const monthArray = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -16,13 +38,11 @@ const DatePicker = () => {
   let year = date.getFullYear();
   let month = date.getMonth();
 
-  console.log(month)
-  
-  const getNumberOfDays = (year, month) => {
+  const getNumberOfDays = (year: number, month: number) => {
     return 40 - new Date(year, month, 40).getDate();
   }
 
-  const getDayDetails = (payload) => {
+  const getDayDetails = (payload: IDayDetails) => {
     let date = payload.index - payload.firstDay;
     let day = payload.index % 7;
     let prevMonth = payload.month - 1;
@@ -47,48 +67,49 @@ const DatePicker = () => {
     }
   }
 
-  const getMonthDetails = (year, month) => {
+  const getMonthDetails = (year: number, month: number) => {
     let firstDay = (new Date(year, month)).getDay();
     let numberOfDays = getNumberOfDays(year, month);
-    let monthArray = [];
+    let monthArray: IDayDetails[] = [];
     let rows = 6;
-    let currentDay = null;
     let index = 0;
     let cols = 7;
 
     for(let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        currentDay = getDayDetails({
+        const currentDay = getDayDetails({
           index,
           numberOfDays,
           firstDay,
           year,
-          month
+          month,
+          timestamp: 0,
+          date: 0
         });
         
-        monthArray.push(currentDay);
+        monthArray.push(currentDay as unknown as IDayDetails);
         index++
       }
     }
     return monthArray;
   }
   
-  const [pickerDate, setPickerDate] = useState({
+  const [pickerDate, setPickerDate] = useState<IPickerDate>({
     year,
     month,
     selectedDay: todayTimestamp,
     monthDetails: getMonthDetails(year, month)
   })
 
-  const isCurrentDay = (day) => {
+  const isCurrentDay = (day: { timestamp: number }) => {
     return day.timestamp === todayTimestamp
   }
 
-  const isSelectedDay = (day) => {
+  const isSelectedDay = (day: { timestamp: number }) => {
     return day.timestamp === pickerDate.selectedDay;
   }
 
-  const getDateFromDateString = (payload) => {
+  const getDateFromDateString = (payload: string) => {
     let value = payload.split('-').map((d) => parseInt(d, 10));
     if(value.length < 3) return null
 
@@ -98,25 +119,25 @@ const DatePicker = () => {
     return { year, month, date }
   }
 
-  const getMonthStr = (month) => {
+  const getMonthStr = (month: number) => {
    return monthArray[Math.max(Math.min(11, month), 0)] || 'Month';
   }
 
-  const getDateStringFromTimestamp = (timestamp) => {
+  const getDateStringFromTimestamp = (timestamp: number) => {
     let dateObject = new Date(timestamp);
     let month = dateObject.getMonth() + 1;
     let date = dateObject.getDate();
     return dateObject.getFullYear() + '-' + (month < 10 ? '0' + month : month) + '-' + (date < 10 ? '0' + date : date );
   }
 
-  const setDate = (date) => {
+  const setDate = (date: IDate) => {
     let selectedDay = new Date(date.year, date.month -1, date.date).getTime();
-    setPickerDate({ selectedDay })
+    setPickerDate({ ...date, selectedDay })
   }
 
   const updateDateFromInput = () => {
-    let dateValue = inputRef.current.value;
-    let datePayload = getDateFromDateString(dateValue);
+    let dateValue = inputRef.current?.value;
+    let datePayload = getDateFromDateString(dateValue || '');
     if(datePayload !== null) {
       setDate(datePayload)
       setPickerDate({
@@ -127,12 +148,12 @@ const DatePicker = () => {
     }
   }
 
-  const setDateToInput = (timestamp) => {
+  const setDateToInput = (timestamp: number) => {
     let dateString = getDateStringFromTimestamp(timestamp)
     inputRef.current.value = dateString;
   }
 
-  const onDateClick = (day) => {
+  const onDateClick = (day: { timestamp: number }) => {
     let year = pickerDate.year
     let month = pickerDate.month;
     let selectedDay = day.timestamp
@@ -140,7 +161,7 @@ const DatePicker = () => {
     setDateToInput(day.timestamp)
   }
 
-  const setYear = (offset) => {
+  const setYear = (offset: number) => {
     let year = pickerDate.year + offset
     let month = pickerDate.month;
 
@@ -151,7 +172,7 @@ const DatePicker = () => {
     })
   }
 
-  const setMonth = (offset) => {
+  const setMonth = (offset: number) => {
     let year = pickerDate.year;
     let month = pickerDate.month + offset;
     if(month === -1) {
@@ -170,7 +191,7 @@ const DatePicker = () => {
   }
   
   const renderCalendar = () => {
-    let days = pickerDate.monthDetails.map((day, index)=> {
+    let days = pickerDate.monthDetails?.map((day, index)=> {
         return (
             <div className={'c-day-container ' + (day.month !== 0 ? ' disabled' : '') + 
                 (isCurrentDay(day) ? ' highlight' : '') + (isSelectedDay(day) ? ' highlight-green' : '')} key={index}>
@@ -201,37 +222,37 @@ const DatePicker = () => {
         <input type="date" onChange={updateDateFromInput} ref={inputRef} />
       </div>
       {showDatePicker && (
-         <div className='mdp-container'>
-         <div className='mdpc-head'>
-             <div className='mdpch-button'>
-                 <div className='mdpchb-inner' onClick={() => setYear(-1)}>
-                     <span className='mdpchbi-left-arrows' />
-                 </div>
-             </div>
-             <div className='mdpch-button'>
-                 <div className='mdpchb-inner' onClick={() => setMonth(-1)}>
-                     <span className='mdpchbi-left-arrow' />
-                 </div>
-             </div>
-             <div className='mdpch-container'>
-                 <div className='mdpchc-year'>{pickerDate.year}</div>
-                 <div className='mdpchc-month'>{getMonthStr(pickerDate.month)}</div>
-             </div>
-             <div className='mdpch-button'>
-                 <div className='mdpchb-inner' onClick={() => setMonth(1)}>
-                     <span className='mdpchbi-right-arrow' />
-                 </div>
-             </div>
-             <div className='mdpch-button' onClick={() => setYear(1)}>
-                 <div className='mdpchb-inner'>
-                     <span className='mdpchbi-right-arrows' />
-                 </div>
-             </div>
-         </div>
-         <div className='mdpc-body'>
-             {renderCalendar()}
-         </div>
-     </div>
+        <div className='mdp-container'>
+        <div className='mdpc-head'>
+            <div className='mdpch-button'>
+                <div className='mdpchb-inner' onClick={() => setYear(-1)}>
+                    <span className='mdpchbi-left-arrows' />
+                </div>
+            </div>
+            <div className='mdpch-button'>
+                <div className='mdpchb-inner' onClick={() => setMonth(-1)}>
+                    <span className='mdpchbi-left-arrow' />
+                </div>
+            </div>
+            <div className='mdpch-container'>
+                <div className='mdpchc-year'>{pickerDate.year}</div>
+                <div className='mdpchc-month'>{getMonthStr(pickerDate.month)}</div>
+            </div>
+            <div className='mdpch-button'>
+                <div className='mdpchb-inner' onClick={() => setMonth(1)}>
+                    <span className='mdpchbi-right-arrow' />
+                </div>
+            </div>
+            <div className='mdpch-button' onClick={() => setYear(1)}>
+                <div className='mdpchb-inner'>
+                    <span className='mdpchbi-right-arrows' />
+                </div>
+            </div>
+        </div>
+        <div className='mdpc-body'>
+            {renderCalendar()}
+        </div>
+    </div>
       )}
     </div>
   )
