@@ -29,8 +29,8 @@ const DatePicker = () => {
   let todayTimestamp = Date.now() - (Date.now() % oneDay) + (new Date().getTimezoneOffset() * 1000 * 60);
   let inputRef = React.createRef<any>();
   
-  const daysArray = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-  const monthArray = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const daysArray = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   
@@ -207,7 +207,7 @@ const DatePicker = () => {
     return (
         <div className='c-container'>
             <div className='cc-head'>
-                {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'].map((d,i)=><div key={i} className='cch-name'>{d}</div>)}
+                {['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'].map((d,i)=><div key={i} className='cch-name'>{d}</div>)}
             </div>
             <div className='cc-body'>
                 {days}
